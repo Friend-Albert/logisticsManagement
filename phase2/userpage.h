@@ -1,10 +1,12 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#define deliverypath "D:/logisticsManagement/res/delivery.txt"
-#define temppath "D:/logisticsManagement/res/Tmp.txt"
+#define DELIVERYPATH "D:/project/logisticsManagement/phase2/res/delivery.txt"
+#define TEMPPATH "D:/project/logisticsManagement/phase2/res/Tmp.txt"
+#define USERPATH "D:/project/logisticsManagement/phase2/res/user.txt"
 
 #include <QMainWindow>
+#include <QMessageBox>
 #include <QString>
 #include <QVector>
 #include <QSet>
@@ -22,13 +24,12 @@
 #include "delivery.h"
 #include "sendpage.h"
 #include "slidepage.h"
-#include "loginpage.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow
+class userpage : public QMainWindow
 {
     Q_OBJECT
 signals:
@@ -40,9 +41,9 @@ signals:
     void sendQuery(QString);
 public:
     //构造函数
-    MainWindow(QWidget *parent = nullptr);
+    userpage(QString username,QString pwd,QWidget *parent = nullptr);
     //析构函数
-    ~MainWindow();
+    ~userpage();
     //当前用户的信息
     user curUser;
     //管理员账户，用于管理余额
@@ -54,8 +55,6 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    //登录页面的指针
-    loginpage* loginbox;
     //寄快递页面的指针
     sendpage* sendbox;
     //用户详情页的指针
@@ -63,7 +62,7 @@ private:
     //当前用户是否为管理员
     bool isAdmin = false;
     //tableWidget的列数（常量）
-    const int tableColumns = 5;
+    const int tableColumns = 8;
     //当前操作的tableWidget的行索引
     int curRow = 0;
     //用来记录下一个新快递的单号
@@ -75,7 +74,7 @@ private:
     //所有用户的昵称（用于判断收件人是否存在）
     QSet<QString> allUsername;
     //与当前用户关联的所有快递
-    QVector<single> allDelivery;
+    QVector<delivery*> allDelivery;
     //当前应当显示的快递的索引
     QVector<int> showList;
     //记录快递单号同tableWidget行数的对应关系
@@ -87,8 +86,6 @@ private:
     //tableWidget中显示指定快递
     void showDelivery(QTableWidget*,const QVector<int>&);
 public slots:
-    //接收登录用户名并显示窗口
-    void showWindow(QString username,QString password);
     //刷新右侧列表显示选中快递信息
     void flushList(int row);
     //判断当前行的快递是否能签收
@@ -96,7 +93,7 @@ public slots:
     //签收快递
     void signPkg();
     //寄新快递
-    void sendPkg(QString,QString);
+    void sendPkg(QString,QString,int,int);
     //更改密码
     void changePwd();
     //更改余额
@@ -105,7 +102,5 @@ public slots:
     void queryPage();
     //查询快递并展示
     void queryPkg(QString);
-    //(管理员模式下)查询用户信息
-    void queryDetail();
 };
 #endif // MAINWINDOW_H

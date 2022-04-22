@@ -6,10 +6,11 @@
  * @param parent 父窗口的指针
  */
 sendpage::sendpage(QWidget *parent) :
-    QWidget(parent),
+    QDialog(parent),
     ui(new Ui::sendpage)
 {
     ui->setupUi(this);
+    ui->lineEdit_3->setValidator(new QRegExpValidator(QRegExp("^[0-9]+$"),this));
     //点击取消按钮时清空输入框内容并且关闭窗口
     connect(ui->Cancelbtn,&QPushButton::clicked,this,[&](){
         this->close();
@@ -33,8 +34,14 @@ sendpage::~sendpage()
  */
 void sendpage::sendClicked()
 {
-    QString desc,addressee;
+    QString desc,addressee,n;
+    int number,type;
     desc = ui->lineEdit->text();
     addressee = ui->lineEdit_2->text();
-    emit trySend(addressee,desc);
+    n = ui->lineEdit_3->text();
+    if(ui->bookbtn->isChecked()) type = 1;
+    else if(ui->fgbtn->isChecked()) type = 2;
+    else type = 3;
+    number = n.toInt();
+    emit trySend(addressee,desc,number,type);
 }

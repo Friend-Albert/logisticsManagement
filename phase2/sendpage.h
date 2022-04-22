@@ -1,20 +1,21 @@
 #ifndef SENDPAGE_H
 #define SENDPAGE_H
 
-#include <QWidget>
+#include <QDialog>
 #include <QString>
+#include <QRegExpValidator>
 
 namespace Ui {
 class sendpage;
 }
 
-class sendpage : public QWidget
+class sendpage : public QDialog
 {
     Q_OBJECT
 
 signals:
     //传递收件人和快递描述
-    void trySend(QString,QString);
+    void trySend(QString,QString,int,int);
 public:
     //构造函数
     explicit sendpage(QWidget *parent = nullptr);

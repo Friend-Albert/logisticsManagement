@@ -2,6 +2,7 @@
 #define LOGINPAGE_H
 
 #include <QDialog>
+#include <QPair>
 #include <QPushButton>
 #include <QTextStream>
 #include <QMap>
@@ -13,8 +14,13 @@
 #include <QPoint>
 #include <QMouseEvent>
 #include "registerpage.h"
+#include "userpage.h"
+#include "adminpage.h"
 
-#define passwdpath "D:/logisticsManagement/res/passwd.txt"
+#define PASSWDPATH "D:/project/logisticsManagement/phase2/res/passwd.txt"
+#define ADMIN 0
+#define USER 1
+#define POSTMAN 2
 
 namespace Ui {
 class loginpage;
@@ -25,10 +31,12 @@ class loginpage : public QDialog
     Q_OBJECT
 
 signals:
-    //传递登录用户的昵称的信号
-    void loginsuccess(QString username,QString password);
+    //管理员登录成功
+    void adminLogin();
+    //快递员登陆成功
+    void postmanLogin(QString name);
     //传递注册是否成功的信号
-    void registerRlt(bool status);
+    void registerRlt(bool status,int userType);
 public:
     //界面的构造函数
     explicit loginpage(QWidget *parent = nullptr);
@@ -40,8 +48,10 @@ private:
     Ui::loginpage *ui;
     //注册页面的指针
     registerpage* newuser;
+    userpage* userbox;
+    adminpage* adminbox;
     //存储所有用户密码的哈希表
-    QMap<QString,QString> passwd;
+    QMap<QString,QPair<int,QString>> passwd;
     //UI设置所需参数
     int cornerRadius = 20;
     //UI设置所需参数

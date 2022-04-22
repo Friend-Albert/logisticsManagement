@@ -236,12 +236,67 @@
      <string/>
     </property>
    </widget>
+   <widget class="QWidget" name="horizontalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>110</x>
+      <y>280</y>
+      <width>421</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QRadioButton" name="userbtn">
+       <property name="font">
+        <font>
+         <family>Corbel</family>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>User</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="adminbtn">
+       <property name="font">
+        <font>
+         <family>Corbel</family>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Admin</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="postmanbtn">
+       <property name="font">
+        <font>
+         <family>Corbel</family>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Postman</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
    <zorder>horizontalLayoutWidget_2</zorder>
    <zorder>verticalLayoutWidget_2</zorder>
    <zorder>quit</zorder>
    <zorder>loginLabel</zorder>
    <zorder>minimize</zorder>
    <zorder>registerLabel</zorder>
+   <zorder>horizontalLayoutWidget</zorder>
   </widget>
  </widget>
  <resources/>

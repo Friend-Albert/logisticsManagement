@@ -1,36 +1,24 @@
 admin
-60 0
+30
 123456
 admin
 default
 default
 a
-25 1
+55
 111111
 testUser1
 default
 default
 b
-170 1
+170
 222222
 testUser2
 default
 default
 lfs
-0 1
 777777
 lfs
 111111
 111111
-postman1
-60 2
-postman1
-testpostman
-default
-default
-postman2
-0 2
-postman2
-postman2
-default
-18813058416
+

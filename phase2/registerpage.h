@@ -9,7 +9,7 @@
 #include <QTextStream>
 #include "user.h"
 
-#define userpath "D:/logisticsManagement/res/user.txt"
+#define USERPATH "D:/project/logisticsManagement/phase2/res/user.txt"
 
 namespace Ui {
 class registerpage;
@@ -48,7 +48,7 @@ public slots:
     //点击完成按钮时获取用户名和密码并发出isUnique信号
     void OKclicked();
     //根据注册是否成功进行处理
-    void handle(bool success);
+    void handle(bool, int);
 };
 
 #endif // REGISTERPAGE_H

@@ -5,7 +5,7 @@
  */
 single::single()
 {
-
+    ;
 }
 
 /**
@@ -36,14 +36,14 @@ single::single(int id, QString sender, QString addressee,
  * @param hasSigned 是否签收
  */
 single::single(int id, QString sender, QString addressee,
-               mytime sendTime, mytime recvtime, QString description, bool hasSigned) {
+               mytime sendTime, mytime recvtime, QString description, int s) {
     _id = id;
     _sender = sender;
     _addressee = addressee;
     _sendTime = sendTime;
     _recvTime = recvtime;
     _description = description;
-    _hasSigned = hasSigned;
+    _status = s;
 }
 
 /**
@@ -68,8 +68,19 @@ void delivery::setNeedRewrite()
 /**
  * @brief delivery的默认构造函数，默认设置快递未签收
  */
-delivery::delivery() {
-    _hasSigned = false;
+const QString &delivery::getPostman() const
+{
+    return _postman;
+}
+
+void delivery::setPostman(const QString &newPostman)
+{
+    _postman = newPostman;
+}
+
+int delivery::getNumber() const
+{
+    return _number;
 }
 
 /**
@@ -78,7 +89,7 @@ delivery::delivery() {
 void delivery::setSigned() {
     mytime recv;
     recv.getRealTime();
-    _hasSigned = true;
+    _status = delivery::hasSigned;
     _recvTime = recv;
 }
 
@@ -112,7 +123,7 @@ QString delivery::getDescription() const { return _description; }
  *         true 已签收
  *         false 未签收
  */
-bool delivery::status() const { return _hasSigned; }
+int delivery::getStatus() const { return _status; }
 
 /**
  * @brief 获取寄件时间
@@ -130,6 +141,89 @@ mytime delivery::getRecvTime() const { return _recvTime; }
  * @brief 计算快递价格
  * @return 文档中说明本类快递价格固定为15元
  */
-int single::calPrice() const {
+int single::getPrice() const {
     return 15;
+}
+
+int single::getType() const
+{
+    return 0;
+}
+
+book::book(int id, int n, int s,QString sender, QString addressee,
+           QString postman, mytime send, QString desc, mytime recv)
+{
+    _id = id;
+    _number = n;
+    _status = s;
+    _sender = sender;
+    _addressee = addressee;
+    _postman = postman;
+    _sendTime = send;
+    _description = desc;
+    _recvTime = recv;
+}
+
+book::~book(){}
+
+int book::getType() const
+{
+    return 1;
+}
+
+int book::getPrice() const
+{
+    return _number * 2;
+}
+
+fragile::fragile(int id, int n, int s,QString sender, QString addressee,
+                 QString postman, mytime send, QString desc, mytime recv)
+{
+    _id = id;
+    _number = n;
+    _status = s;
+    _sender = sender;
+    _addressee = addressee;
+    _postman = postman;
+    _sendTime = send;
+    _description = desc;
+    _recvTime = recv;
+}
+
+fragile::~fragile(){}
+
+int fragile::getType() const
+{
+    return 2;
+}
+
+int fragile::getPrice() const
+{
+    return _number * 8;
+}
+
+normal::normal(int id, int n, int s,QString sender, QString addressee,
+               QString postman, mytime send, QString desc, mytime recv)
+{
+    _id = id;
+    _number = n;
+    _status = s;
+    _sender = sender;
+    _addressee = addressee;
+    _postman = postman;
+    _sendTime = send;
+    _description = desc;
+    _recvTime = recv;
+}
+
+normal::~normal(){}
+
+int normal::getType() const
+{
+    return 3;
+}
+
+int normal::getPrice() const
+{
+    return _number * 5;
 }

@@ -14,13 +14,14 @@ registerpage::registerpage(QWidget *parent) :
 {
     //设置控件，设置页面无边框，背景透明，限制用户名只能为英文字母组成
     ui->setupUi(this);
-    ui->username->setValidator(new QRegExpValidator(QRegExp("^[A-Za-z]+$"),this));
-    ui->username->setPlaceholderText("Only english characters");
-    ui->password->setValidator(new QRegExpValidator(QRegExp("^[A-Za-z]+$"),this));
-    ui->password->setPlaceholderText("Only english characters");
+    ui->username->setValidator(new QRegExpValidator(QRegExp("^[A-Za-z0-9]+$"),this));
+    ui->username->setPlaceholderText("Only english characters and number");
+    ui->password->setValidator(new QRegExpValidator(QRegExp("^[A-Za-z0-9]+$"),this));
+    ui->password->setPlaceholderText("Only english characters and number");
     ui->telephone->setValidator(new QRegExpValidator(QRegExp("^[0-9]+$"),this));
     this->setWindowFlags(Qt::Dialog|Qt::FramelessWindowHint);
     this->setAttribute(Qt::WA_TranslucentBackground);
+    this->setAttribute(Qt::WA_DeleteOnClose);
 
     QPushButton* cancelbtn = ui->cancel;
     QPushButton* OKbtn = ui->OK;
@@ -82,14 +83,14 @@ void registerpage::OKclicked(){
  * @brief 注册成功则写入用户文件中，否则提醒注册失败
  * @param success
  */
-void registerpage::handle(bool success){
+void registerpage::handle(bool success, int userType){
     if(success){
-        QFile outFile(userpath);
+        QFile outFile(USERPATH);
         qDebug()<<outFile.open(QIODevice::WriteOnly|QIODevice::Append|QIODevice::Text);
         QTextStream fout(&outFile);
         fout << _username << endl;
         //新用户余额初始为0
-        fout << 0 << endl;
+        fout << 0 <<" " << userType << endl;
         fout << _pwd << endl;
         fout << _name << endl;
         fout << _location << endl;
@@ -97,7 +98,7 @@ void registerpage::handle(bool success){
         outFile.close();
         //关闭注册页面，显示登录界面
         this->close();
-        parentWidget()->show();
+        this->parentWidget()->show();
     }else{
         //提示用户昵称已被注册
         QMessageBox::critical(this,"Error",

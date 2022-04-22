@@ -55,6 +55,7 @@ loginpage::loginpage(QWidget *parent) :
 loginpage::~loginpage()
 {
     save();
+    if(userbox) delete userbox;
     delete newuser;
     delete ui;
 }
@@ -64,7 +65,7 @@ loginpage::~loginpage()
  */
 void loginpage::init(){
     //读取存储用户昵称和密码的文件，建立昵称和密码的哈希表
-    QFile readFile(passwdpath);
+    QFile readFile(PASSWDPATH);
     if(!readFile.open(QIODevice::ReadOnly|QIODevice::Text)){
         qDebug() << "failed" <<endl;
         return ;
@@ -72,14 +73,16 @@ void loginpage::init(){
     QTextStream fin(&readFile);
     QString username,pwd;
     int usernum = 0;
+    int type;
     fin >> usernum;
     qDebug()<<usernum<<endl;
     fin.readLine();
     while(usernum--){
-        username = fin.readLine();
+        fin >> username;
+        fin >> type;
         if(!username.isNull()){
-            pwd = fin.readLine();
-            passwd[username] = pwd;
+            fin >> pwd;
+            passwd[username] = QPair<int,QString>(type,pwd);
         }
     }
     readFile.close();
@@ -121,14 +124,14 @@ void loginpage::init(){
  */
 void loginpage::save(){
     //打开密码文件，输出哈希表(passwd)中的所有用户名，密码
-    QFile outFile(passwdpath);
+    QFile outFile(PASSWDPATH);
     outFile.open(QIODevice::WriteOnly|QIODevice::Truncate|QIODevice::Text);
     QTextStream fout(&outFile);
     int usernum = passwd.size();
     fout << usernum << endl;
     for(auto i = passwd.begin();i!=passwd.end();i++){
-        fout << i.key() << endl;
-        fout << i.value() << endl;
+        fout << i.key() << " " << i.value().first << endl;
+        fout << i.value().second << endl;
     }
     outFile.close();
 }
@@ -140,23 +143,42 @@ void loginpage::save(){
  *         false 不匹配
  */
 bool loginpage::login(){
+    int type;
     QString username = ui->usernameinput->text();
     QString pwd = ui->passwdinput->text();
+    if(ui->adminbtn->isChecked()) type = ADMIN;
+    else if(ui->postmanbtn->isChecked()) type = POSTMAN;
+    else type = USER;
     if(passwd.find(username)!=passwd.end()){
-        if(passwd[username] == pwd)
+        if(passwd[username].second == pwd && passwd[username].first == type)
             return true;
     }
     return false;
 }
 
 /**
- * @brief 如果匹配，发送登陆成功的信号，不匹配则弹窗告知
+ * @brief 如果匹配，显示对应窗口，不匹配则弹窗告知
  */
 void loginpage::trylogin(){
     bool success = false;
+    bool isAdmin = ui->adminbtn->isChecked();
+    bool isUser = ui->userbtn->isChecked();
+    bool isPostman = ui->postmanbtn->isChecked();
     success = login();
     if(success){
-        emit loginsuccess(ui->usernameinput->text(),ui->passwdinput->text());
+        if(isUser){
+            userbox = new userpage(ui->usernameinput->text(),ui->passwdinput->text(),this);
+            this->hide();
+            userbox->show();
+            //当在用户界面更改密码后更改于此存储的用户密码表
+            connect(userbox,&userpage::newPwd,this,&loginpage::changepwd);
+        }
+        else if(isAdmin){
+            adminbox = new adminpage(this);
+            this->hide();
+            adminbox->show();
+        }
+        else if(isPostman) emit postmanLogin(ui->usernameinput->text());
         ui->passwdinput->clear();
         ui->usernameinput->clear();
     }else{
@@ -186,13 +208,13 @@ void loginpage::checkUnique(QString username,QString pwd){
     if(passwd.find(username)==passwd.end()){
         success = true;
         //注册成功将用户名和密码加入哈希表中
-        passwd[username] = pwd;
+        passwd[username] = QPair<int,QString>(USER,pwd);
     }
     //发送注册结果的信号
-    emit registerRlt(success);
+    emit registerRlt(success, USER);
 }
 
 void loginpage::changepwd(QString username, QString newpwd)
 {
-    passwd[username] = newpwd;
+    passwd[username] = QPair<int,QString>(USER,newpwd);
 }

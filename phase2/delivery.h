@@ -6,32 +6,43 @@
 
 //所有快递种类的基类
 class delivery {
-
+public:
+    enum type{
+        toBeCollected = 0x01,
+        toBeSigned = 0x02,
+        hasSigned = 0x04
+    };
 protected:
     //用于区别快递的唯一ID
     int _id;
+    //件数
+    int _number;
     //快递寄件人的USERID以及用户名
     QString _sender;
     //快递收件人的USERID以及用户名
     QString _addressee;
-    //是否签收
-    bool _hasSigned;
+    //快递状态
+    int _status;
     //寄件时间
     mytime _sendTime;
     //收件时间
     mytime _recvTime;
     //快递描述
     QString _description;
+    //快递员名称
+    QString _postman;
     //快递信息是否发生了更改，需要更新文件中的信息
     bool needRewrite = false;
 
 public:
-    //默认构造函数
-    delivery();
-    //设置快递签收（传入签收时间）
+    //虚析构函数
+    virtual ~delivery(){};
+    //设置快递签收
     void setSigned();
     //计算价格的纯虚函数
-    virtual int calPrice() const = 0;
+    virtual int getPrice() const = 0;
+    //返回快递类型的纯虚函数
+    virtual int getType() const = 0;
     //获得快递ID
     int getid() const ;
     //获得寄件人信息
@@ -40,8 +51,10 @@ public:
     QString getAddressee() const ;
     //获得快递描述
     QString getDescription() const ;
-    //获得快递状态（是否签收）
-    bool status() const ;
+    //获得快递状态
+    int getStatus() const ;
+    //更改快递状态
+    void setStatus();
     //获得快递寄件时间
     mytime getSendTime() const ;
     //获得快递收件时间
@@ -50,6 +63,12 @@ public:
     bool getNeedRewrite() const;
     //设置需要重写
     void setNeedRewrite();
+    //获得快递员名称
+    const QString &getPostman() const;
+    //设置快递员
+    void setPostman(const QString &newPostman);
+    //获得件数
+    int getNumber() const;
 };
 
 //阶段一唯一的一种快递
@@ -62,9 +81,35 @@ public:
            mytime,QString);
     //有参构造函数，用于系统读入原有快递记录时
     single(int, QString, QString,
-           mytime, mytime, QString,bool);
+           mytime, mytime, QString,int);
     //父类计算快递价格函数的重写
-    virtual int calPrice() const;
+    virtual int getPrice() const;
+    //返回快递类型
+    virtual int getType() const;
+};
+
+class book : public delivery {
+public:
+    book(int, int, int, QString, QString,QString,mytime, QString, mytime = mytime());
+    virtual ~book();
+    virtual int getType() const;
+    virtual int getPrice() const;
+};
+
+class fragile : public delivery {
+public:
+    fragile(int, int, int, QString, QString,QString,mytime, QString, mytime = mytime());
+    virtual ~fragile();
+    virtual int getType() const;
+    virtual int getPrice() const;
+};
+
+class normal : public delivery {
+public:
+    normal(int, int, int, QString, QString,QString,mytime, QString, mytime = mytime());
+    virtual ~normal();
+    virtual int getType() const;
+    virtual int getPrice() const;
 };
 
 #endif // DELIVERY_H
