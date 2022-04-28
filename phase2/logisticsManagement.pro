@@ -14,6 +14,7 @@ SOURCES += \
     delivery.cpp \
     loginpage.cpp \
     main.cpp \
+    pstmpage.cpp \
     registerpage.cpp \
     sendpage.cpp \
     slidepage.cpp \
@@ -25,6 +26,7 @@ HEADERS += \
     basic.h \
     delivery.h \
     loginpage.h \
+    pstmpage.h \
     registerpage.h \
     sendpage.h \
     slidepage.h \
@@ -34,6 +36,7 @@ HEADERS += \
 FORMS += \
     adminpage.ui \
     loginpage.ui \
+    pstmpage.ui \
     registerpage.ui \
     sendpage.ui \
     userpage.ui

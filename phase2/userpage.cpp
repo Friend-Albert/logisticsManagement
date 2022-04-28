@@ -44,8 +44,8 @@ userpage::userpage(QString username,QString pwd,QWidget *parent)
 userpage::~userpage()
 {
     save();
-    for(int i=0;i<allDelivery.size();i++)
-        delete allDelivery[i];
+    for(int i=0;i<_allDelivery.size();i++)
+        delete _allDelivery[i];
     if(detail) delete detail;
     if(detail) delete sendbox;
     delete ui;
@@ -91,7 +91,7 @@ void userpage::init()
         fin.read(1);
         loc = fin.readLine();
         qDebug()<<username<<endl;
-        allUsername.insert(username);
+        _allUsername.insert(username);
         if(username == _username){
             curUser = user(balance,username,name,loc,tele);
         }
@@ -130,8 +130,8 @@ void userpage::init()
                 tmp = new fragile(id,n,status,sender,addressee,postman,st,desc,rt);
             else if(type == 3)
                 tmp = new normal(id,n,status,sender,addressee,postman,st,desc,rt);
-            allDelivery.push_back(tmp);
-            showList.push_back(allDelivery.size()-1);
+            _allDelivery.push_back(tmp);
+            _showList.push_back(_allDelivery.size()-1);
         }
     }
     deliFile.close();
@@ -140,7 +140,7 @@ void userpage::init()
     ui->label->setText("Delivery(User:"+_username+")");
 
     //显示所有关联快递
-    showDelivery(ui->tableWidget,showList);
+    showDelivery(ui->tableWidget,_showList);
 
     //设置tableWidget选中模式为整行选中并且不允许编辑
     ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -191,13 +191,6 @@ void userpage::init()
     connect(ui->detailbtn,&QPushButton::clicked,detail,[=](){
         banLabel->setText("Balance:"+QString::number(curUser.getBalance()));
     });
-    if(isAdmin){
-        changebtn->hide();
-        chargebtn->hide();
-    }else{
-        changebtn->show();
-        chargebtn->show();
-    }
     //当点击单元格时更新列表信息为当前信息
     connect(ui->tableWidget,&QTableWidget::cellClicked,this,&userpage::flushList);
     //当单元格信息发生更改时更新列表信息
@@ -230,9 +223,9 @@ void userpage::save()
     outFile.open(QIODevice::Text|QIODevice::Truncate|QIODevice::WriteOnly);
     QTextStream fout(&outFile);
     //写入所有信息变更/新创建的快递
-    for(int i=0;i<allDelivery.size();i++){
-        if(allDelivery[i]->getNeedRewrite()){
-            delivery& dly = *allDelivery[i];
+    for(int i=0;i<_allDelivery.size();i++){
+        if(_allDelivery[i]->getNeedRewrite()){
+            delivery& dly = *_allDelivery[i];
             rewrite.insert(dly.getid());
             fout << dly.getDescription() << endl;
             fout << dly.getid() <<" "<<dly.getType() << " " <<dly.getNumber();
@@ -342,8 +335,8 @@ void userpage::showDelivery(QTableWidget *table, const QVector<int> &all)
     for(int i=0;i<all.size();i++){
         int idx = all[i];
         table->insertRow(curRow);
-        rowId[curRow] = allDelivery[idx]->getid();
-        delivery& d = *allDelivery[idx];
+        _rowId[curRow] = _allDelivery[idx]->getid();
+        delivery& d = *_allDelivery[idx];
         table->setItem(curRow,0,new QTableWidgetItem(d.getDescription()));
         if(d.getType() == 1)
             table->setItem(curRow,1,new QTableWidgetItem("Book"));
@@ -426,10 +419,10 @@ void userpage::signPkg()
     mytime curTime;
     curTime.getRealTime();
     //找到该行快递的快递单号，设置其已签收并需要重写
-    for(int i=0;i<allDelivery.size();i++){
-        if(allDelivery[i]->getid() == rowId[curRow]){
-            allDelivery[i]->setNeedRewrite();
-            allDelivery[i]->setSigned();
+    for(int i=0;i<_allDelivery.size();i++){
+        if(_allDelivery[i]->getid() == _rowId[curRow]){
+            _allDelivery[i]->setNeedRewrite();
+            _allDelivery[i]->setSigned();
         }
     }
     //更新表格中的信息
@@ -464,14 +457,14 @@ void userpage::sendPkg(QString addressee, QString desc,int number,int type)
         delete tmp;
     }
     //如果收件人正确则新建快递并更改用户余额
-    else if(addressee!=curUser.getUserName()&&allUsername.find(addressee)!=allUsername.end()){
+    else if(addressee!=curUser.getUserName()&&_allUsername.find(addressee)!=_allUsername.end()){
         tmp->setNeedRewrite();
-        allDelivery.push_back(tmp);
-        showList.push_back(allDelivery.size()-1);
+        _allDelivery.push_back(tmp);
+        _showList.push_back(_allDelivery.size()-1);
         curUser.setBalance(tmp->getPrice());
         admin.recharge(tmp->getPrice());
         sendbox->close();
-        showDelivery(ui->tableWidget,showList);
+        showDelivery(ui->tableWidget,_showList);
     }
     //否则提示输入有效的收件人
     else{
@@ -598,7 +591,7 @@ void userpage::queryPage()
     rule->setText(QString("Query Rules:\nIf you query by time,please enter it in the following ") +
         QString("format:Month.Date\nIf you query by sender/recipient,please input his/her username\n") +
         QString("If you query by courier number please input an interger\nif you input nothing,then all ") +
-        QString("deliveries will be shown.\nIf you query by state,pleasr input:toBeCollected\\") +
+        QString("deliveries will be shown.\nIf you query by state,please input:toBeCollected\\") +
         QString("toBeSigned\\signed"));
     rule->setFont(QFont("Corbel",12));
     rule->setWordWrap(true);
@@ -623,7 +616,7 @@ void userpage::queryPkg(QString text)
     bool isNumber = false;
     int courierN = text.toInt(&isNumber);
     //清空展示快递的数组
-    showList.clear();
+    _showList.clear();
     //只有查询日期时才会出现.字符，以此判断是否查询日期
     for(int i=0;i<text.size();i++){
         if(text[i]=='.') {isDate = true;break;}
@@ -638,53 +631,53 @@ void userpage::queryPkg(QString text)
 
     //如果输入为空，则全部显示
     if(text.isEmpty()){
-        for(int i=0;i<allDelivery.size();i++) showList.push_back(i);
+        for(int i=0;i<_allDelivery.size();i++) _showList.push_back(i);
     }
     //如果输入日期，则查找对应快递
     else if(isDate){
-        for(int i=0;i<allDelivery.size();i++){
-            mytime t1 = allDelivery[i]->getSendTime();
-            mytime t2 = allDelivery[i]->getRecvTime();
+        for(int i=0;i<_allDelivery.size();i++){
+            mytime t1 = _allDelivery[i]->getSendTime();
+            mytime t2 = _allDelivery[i]->getRecvTime();
             if(t1.isSameDay(text)||t2.isSameDay(text)){
-                showList.push_back(i);
+                _showList.push_back(i);
             }
         }
     }
     //如果输入数字，则查找对应快递单号的快递
     else if(isNumber){
-        for(int i=0;i<allDelivery.size();i++){
-            if(courierN == allDelivery[i]->getid()) {showList.push_back(i); break;}
+        for(int i=0;i<_allDelivery.size();i++){
+            if(courierN == _allDelivery[i]->getid()) {_showList.push_back(i); break;}
         }
     }
     else if(isStatus){
-        for(int i=0;i<allDelivery.size();i++){
-            if(allDelivery[i]->getStatus() == isStatus)
-                showList.push_back(i);
+        for(int i=0;i<_allDelivery.size();i++){
+            if(_allDelivery[i]->getStatus() == isStatus)
+                _showList.push_back(i);
         }
     }
     //剩下只可能输入用户名，则查找关联快递
     else{
         if(text.startsWith("Sender:")){
             text = text.mid(7);
-            for(int i=0;i<allDelivery.size();i++){
-                if(text == allDelivery[i]->getSender())
-                    showList.push_back(i);
+            for(int i=0;i<_allDelivery.size();i++){
+                if(text == _allDelivery[i]->getSender())
+                    _showList.push_back(i);
                 }
         }
         else if(text.startsWith("Recipient:")){
             text = text.mid(10);
-            for(int i=0;i<allDelivery.size();i++){
-                if(text == allDelivery[i]->getAddressee())
-                    showList.push_back(i);
+            for(int i=0;i<_allDelivery.size();i++){
+                if(text == _allDelivery[i]->getAddressee())
+                    _showList.push_back(i);
                 }
         }
     }
     //如果无结果则报错
-    if(showList.size()==0){
+    if(_showList.size()==0){
         QMessageBox::critical(this,"Error",
                               "No Result");
     }
     //显示对应快递
     else
-        showDelivery(ui->tableWidget,showList);
+        showDelivery(ui->tableWidget,_showList);
 }

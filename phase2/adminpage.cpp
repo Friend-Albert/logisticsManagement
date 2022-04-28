@@ -8,6 +8,7 @@ adminpage::adminpage(QWidget *parent) :
     ui->setupUi(this);
     this->setAttribute(Qt::WA_DeleteOnClose);
     init();
+    ui->assignbtn->setEnabled(false);
 
     connect(ui->assignbtn,&QPushButton::clicked,this,&adminpage::assignPage);
     connect(this,&adminpage::statusChange,this,&adminpage::assignTask);
@@ -19,7 +20,7 @@ adminpage::adminpage(QWidget *parent) :
         newPostman->show();
         this->hide();
         connect(newPostman,&registerpage::isUnique,this,[=](QString username){
-           if(pBalance.find(username) == pBalance.end())
+           if(postmanName.find(username) == postmanName.end())
                emit postmanRegister(true,2);
            else
                emit postmanRegister(false,2);
@@ -34,7 +35,10 @@ adminpage::adminpage(QWidget *parent) :
 
 adminpage::~adminpage()
 {
-    if(newPostman) delete newPostman;
+    save();
+    if(newPostman != nullptr) delete newPostman;
+    for(int i=0;i<allDelivery.size();i++)
+        delete allDelivery[i];
     delete ui;
 }
 
@@ -57,8 +61,11 @@ void adminpage::init()
         loc = fin.readLine();
         ++userNumber;
         qDebug() << username <<endl;
-        if(type == 0) admin = user(balance,username,name,loc,tele);
-        else if(type == 2)pBalance[username] = balance;
+        if(type == 0) {
+            admin = user(balance,username,name,loc,tele);
+        }else if(type == 2){
+            postmanName.insert(username);
+        }
     }
     inFile.close();
 
@@ -114,7 +121,59 @@ void adminpage::init()
 
 void adminpage::save()
 {
-    ;
+    //存储已经写入的快递的id
+    QSet<int> rewrite;
+    QString sender,addressee,desc,postman;
+    int id,status,type,n;
+    int smonth,sday,shour,smin;
+    int rmonth,rday,rhour,rmin;
+    QFile inFile(DELIVERYPATH);
+    inFile.open(QIODevice::Text|QIODevice::ReadOnly);
+    QTextStream fin(&inFile);
+    QFile outFile(TEMPPATH);
+    outFile.open(QIODevice::Text|QIODevice::Truncate|QIODevice::WriteOnly);
+    QTextStream fout(&outFile);
+    //写入所有信息变更/新创建的快递
+    for(int i=0;i<allDelivery.size();i++){
+        if(allDelivery[i]->getNeedRewrite()){
+            delivery& dly = *allDelivery[i];
+            rewrite.insert(dly.getid());
+            fout << dly.getDescription() << endl;
+            fout << dly.getid() <<" "<<dly.getType() << " " <<dly.getNumber();
+            fout << " "<< dly.getSender()<< " " <<dly.getAddressee() << endl;
+            fout << dly.getPostman() << endl;
+            fout << dly.getStatus() << endl;
+            fout << dly.getSendTime().getMonth() <<" "<< dly.getSendTime().getDate() << " "
+                 << dly.getSendTime().getHour() <<" "<<dly.getSendTime().getMin()<<" ";
+            fout << dly.getRecvTime().getMonth() <<" "<< dly.getRecvTime().getDate()<<" "
+                 << dly.getRecvTime().getHour() <<" "<<dly.getRecvTime().getMin() << endl;
+        }
+    }
+    //将原有文件信息拷贝入临时文件中
+    while(!fin.atEnd()){
+        desc = fin.readLine();
+        if(desc.isEmpty()) break;
+        fin >> id >> type >> n >> sender >> addressee;
+        fin >> postman;
+        fin >> status;
+        fin >> smonth >> sday >> shour >> smin >> rmonth >> rday >> rhour >> rmin;
+        fin.read(1);
+        //如果该快递已经写入了文件中（信息发生更改）则跳过
+        if(rewrite.find(id) != rewrite.end()) continue;
+        //否则原样写入临时文件中
+        fout << desc << endl;
+        fout << id << " " << type << " " <<n << " " <<sender<<" "<< addressee << endl;
+        fout << postman<<endl;
+        fout << status << endl;
+        fout << smonth <<" "<<sday<<" "<<shour<<" "
+             << smin <<" "<<rmonth<<" "<<rday<<" "
+             << rhour <<" "<< rmin<<endl;
+    }
+    inFile.close();
+    outFile.close();
+    //删除原文件并更名临时文件
+    inFile.remove();
+    outFile.rename(DELIVERYPATH);
 }
 
 /**
@@ -125,7 +184,7 @@ void adminpage::save()
 void adminpage::showDelivery(QTableWidget *table, const QVector<int> &all)
 {
     //要先断开单元格内容变更同更新列表的连接，否则会导致程序崩溃
-    disconnect(ui->tableWidget,&QTableWidget::cellChanged,this,&adminpage::flushList);
+    disconnect(table,&QTableWidget::cellChanged,this,&adminpage::flushList);
 
     //清空原有表格内容
     for(int row = table->rowCount() - 1;row >= 0; row--){
@@ -161,7 +220,7 @@ void adminpage::showDelivery(QTableWidget *table, const QVector<int> &all)
     }
 
     //重新将单元格内容更改同刷新列表相连
-    connect(ui->tableWidget,&QTableWidget::cellChanged,this,&adminpage::flushList);
+    connect(table,&QTableWidget::cellChanged,this,&adminpage::flushList);
 }
 
 void adminpage::flushList(int row)
@@ -198,12 +257,12 @@ void adminpage::flushList(int row)
 void adminpage::queryDetail()
 {
     //设置页面组件并且设置表格无法更改
-    QWidget *user = new QWidget();
+    QDialog *user = new QDialog(this);
     user->resize(600,400);
     user->setAttribute(Qt::WA_DeleteOnClose);
     user->setWindowTitle("User Information");
     QVBoxLayout* mainLayout = new QVBoxLayout(user);
-    QTableWidget* detail = new QTableWidget(userNumber,6,user);
+    QTableWidget* detail = new QTableWidget(userNumber,7,user);
     detail->resize(600,350);
     detail->setEditTriggers(QAbstractItemView::NoEditTriggers);
     QLineEdit* input = new QLineEdit(user);
@@ -213,7 +272,7 @@ void adminpage::queryDetail()
     mainLayout->addWidget(input);
     //设置表头
     detail->setHorizontalHeaderLabels(QStringList()<<"username"<<"password"<<"name"<<"balance"
-                                      <<"tele."<<"location");
+                                      <<"tele."<<"location"<<"type");
     //读入所有用户信息
     QFile userFile(USERPATH);
     userFile.open(QIODevice::ReadOnly|QIODevice::Text);
@@ -236,8 +295,16 @@ void adminpage::queryDetail()
         detail->setItem(cur,2,new QTableWidgetItem(name));
         detail->setItem(cur,3,new QTableWidgetItem(QString::asprintf("%d",balance)));
         detail->setItem(cur,4,new QTableWidgetItem(tele));
-        detail->setItem(cur++,5,new QTableWidgetItem(loc));
+        detail->setItem(cur,5,new QTableWidgetItem(loc));
+        if(type == 0)
+            detail->setItem(cur,6,new QTableWidgetItem("Admin"));
+        else if(type == 1)
+            detail->setItem(cur,6,new QTableWidgetItem("User"));
+        else if(type == 2)
+            detail->setItem(cur,6,new QTableWidgetItem("Postman"));
+        ++cur;
     }
+    userFile.close();
     user->show();
 
     //按下回车键时查询特定用户信息
@@ -270,8 +337,8 @@ void adminpage::assignPage()
     QComboBox* postman = new QComboBox();
     QPushButton* okbtn = new QPushButton("OK");
     QPushButton* cancelbtn = new QPushButton("Cancel");
-    for(auto i = pBalance.begin();i!=pBalance.end();i++){
-        postman->addItem(i.key());
+    for(auto i = postmanName.begin();i!=postmanName.end();i++){
+        postman->addItem(*i);
     }
     btn->addWidget(okbtn);
     btn->addWidget(cancelbtn);
@@ -291,10 +358,7 @@ void adminpage::assignTask(QString postmanName)
     allDelivery[index]->setPostman(postmanName);
     allDelivery[index]->setNeedRewrite();
     ui->tableWidget->item(curRow,5)->setText(postmanName);
-    pBalance[postmanName] += (allDelivery[index]->getPrice()>>1);
-    admin.setBalance((allDelivery[index]->getPrice()>>1));
     ui->querybtn->setEnabled(false);
-    qDebug() << admin.getBalance() << pBalance[postmanName] << endl;
 }
 
 void adminpage::needAssign(int row)
@@ -302,7 +366,7 @@ void adminpage::needAssign(int row)
     QTableWidget* table = ui->tableWidget;
     QString status = table->item(row,7)->text();
     QString postman = table->item(row,5)->text();
-    //如果能签收，则设置签收按钮可以点击
+    //如果需要分配快递员，则设置分配按钮可以点击
     if(status.contains("collected") && postman == "None"){
         ui->assignbtn->setEnabled(true);
     }
@@ -324,9 +388,9 @@ void adminpage::queryPage()
     QVBoxLayout *mainLayout = new QVBoxLayout(query);
     //声明查询规则
     rule->setText(QString("Query Rules:\nIf you query by time,please enter it in the following ") +
-        QString("format:Month.Date\nIf you query by sender/recipient,please input his/her username\n") +
-        QString("If you query by courier number please input an interger\nif you input nothing,then all ") +
-        QString("deliveries will be shown.\nIf you query by state,pleasr input:toBeCollected\\") +
+        QString("format:Month.Date\nIf you query by sender/recipient,please input sender/recipient:his/her username,") +
+        QString("like sender:user1.\nIf you query by courier number please input an interger\nif you input nothing") +
+        QString(",then all deliveries will be shown.\nIf you query by state,please input:toBeCollected\\") +
         QString("toBeSigned\\signed"));
     rule->setFont(QFont("Corbel",12));
     rule->setWordWrap(true);
@@ -392,14 +456,14 @@ void adminpage::queryPkg(QString text)
     }
     //剩下只可能输入用户名，则查找关联快递
     else{
-        if(text.startsWith("Sender:")){
+        if(text.startsWith("sender:")){
             text = text.mid(7);
             for(int i=0;i<allDelivery.size();i++){
                 if(text == allDelivery[i]->getSender())
                     showList.push_back(i);
                 }
         }
-        else if(text.startsWith("Recipient:")){
+        else if(text.startsWith("recipient:")){
             text = text.mid(10);
             for(int i=0;i<allDelivery.size();i++){
                 if(text == allDelivery[i]->getAddressee())

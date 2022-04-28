@@ -125,6 +125,8 @@ QString delivery::getDescription() const { return _description; }
  */
 int delivery::getStatus() const { return _status; }
 
+void delivery::setStatus(const int status) { _status = status; }
+
 /**
  * @brief 获取寄件时间
  * @return mytime类型的时间

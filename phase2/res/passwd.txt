@@ -1,4 +1,4 @@
-4
+6
 a 1
 111111
 admin 0
@@ -7,3 +7,7 @@ b 1
 222222
 lfs 1
 777777
+postman1 2
+postman1
+postman2 2
+postman2

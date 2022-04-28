@@ -16,6 +16,7 @@
 #include "registerpage.h"
 #include "userpage.h"
 #include "adminpage.h"
+#include "pstmpage.h"
 
 #define PASSWDPATH "D:/project/logisticsManagement/phase2/res/passwd.txt"
 #define ADMIN 0
@@ -46,10 +47,11 @@ public:
 private:
     //存储当前界面UI控件的指针
     Ui::loginpage *ui;
-    //注册页面的指针
-    registerpage* newuser;
-    userpage* userbox;
-    adminpage* adminbox;
+    //相关页面的指针
+    registerpage* _register = nullptr;
+    userpage* _user = nullptr;
+    adminpage* _admin = nullptr;
+    pstmpage* _postman = nullptr;
     //存储所有用户密码的哈希表
     QMap<QString,QPair<int,QString>> passwd;
     //UI设置所需参数

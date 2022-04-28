@@ -72,13 +72,13 @@ private:
     //当前用户的密码
     QString _password;
     //所有用户的昵称（用于判断收件人是否存在）
-    QSet<QString> allUsername;
+    QSet<QString> _allUsername;
     //与当前用户关联的所有快递
-    QVector<delivery*> allDelivery;
+    QVector<delivery*> _allDelivery;
     //当前应当显示的快递的索引
-    QVector<int> showList;
+    QVector<int> _showList;
     //记录快递单号同tableWidget行数的对应关系
-    QMap<int,int> rowId;
+    QMap<int,int> _rowId;
     //初始化界面等操作
     void init();
     //保存数据

@@ -16,7 +16,7 @@ loginpage::loginpage(QWidget *parent) :
     //创建控件
     ui->setupUi(this);
     //堆上申请注册界面
-    newuser = new registerpage(this);
+    _register = new registerpage(this);
 
     QPushButton* loginbtn = ui->loginbtn;
     QPushButton* registerbtn = ui->registerbtn;
@@ -55,8 +55,8 @@ loginpage::loginpage(QWidget *parent) :
 loginpage::~loginpage()
 {
     save();
-    if(userbox) delete userbox;
-    delete newuser;
+    if(_user) delete _user;
+    delete _register;
     delete ui;
 }
 
@@ -167,18 +167,22 @@ void loginpage::trylogin(){
     success = login();
     if(success){
         if(isUser){
-            userbox = new userpage(ui->usernameinput->text(),ui->passwdinput->text(),this);
+            _user = new userpage(ui->usernameinput->text(),ui->passwdinput->text(),this);
             this->hide();
-            userbox->show();
+            _user->show();
             //当在用户界面更改密码后更改于此存储的用户密码表
-            connect(userbox,&userpage::newPwd,this,&loginpage::changepwd);
+            connect(_user,&userpage::newPwd,this,&loginpage::changepwd);
         }
         else if(isAdmin){
-            adminbox = new adminpage(this);
+            _admin = new adminpage(this);
             this->hide();
-            adminbox->show();
+            _admin->show();
         }
-        else if(isPostman) emit postmanLogin(ui->usernameinput->text());
+        else if(isPostman){
+            _postman = new pstmpage(ui->usernameinput->text(),this);
+            this->hide();
+            _postman->show();
+        }
         ui->passwdinput->clear();
         ui->usernameinput->clear();
     }else{
@@ -192,10 +196,10 @@ void loginpage::trylogin(){
  */
 void loginpage::showRegister(){
     this->hide();
-    newuser->show();
+    _register->show();
     //注册页面尝试注册，调用checkUnique检测新用户昵称是否唯一
-    connect(newuser,&registerpage::isUnique,this,&loginpage::checkUnique);
-    connect(this,&loginpage::registerRlt,newuser,&registerpage::handle);
+    connect(_register,&registerpage::isUnique,this,&loginpage::checkUnique);
+    connect(this,&loginpage::registerRlt,_register,&registerpage::handle);
 }
 
 /**

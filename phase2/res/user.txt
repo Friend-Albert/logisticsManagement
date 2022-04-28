@@ -1,5 +1,5 @@
 admin
-60 0
+23 0
 123456
 admin
 default
@@ -23,14 +23,26 @@ lfs
 111111
 111111
 postman1
-60 2
+82 2
 postman1
-testpostman
+postman1
 default
 default
 postman2
-0 2
+15 2
 postman2
 postman2
 default
 18813058416
+ceshikuaidiyuan
+0 2
+ceshi1
+kuaidiyuan
+hhhhhhh
+188888888
+wwww
+0 2
+password
+annie
+wwwwwwwwwwwww
+166666666

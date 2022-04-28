@@ -48,9 +48,9 @@ private:
     user admin;
     QVector<delivery*> allDelivery;
     QVector<int> showList;
-    QMap<QString,int> pBalance;
+    QSet<QString> postmanName;
     QMap<int,int> rowId;
-    registerpage* newPostman;
+    registerpage* newPostman = nullptr;
     void init();
     void save();
     void showDelivery(QTableWidget*, const QVector<int>&);

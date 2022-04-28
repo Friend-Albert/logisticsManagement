@@ -54,7 +54,7 @@ public:
     //获得快递状态
     int getStatus() const ;
     //更改快递状态
-    void setStatus();
+    void setStatus(const int);
     //获得快递寄件时间
     mytime getSendTime() const ;
     //获得快递收件时间
