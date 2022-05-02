@@ -21,7 +21,7 @@ class registerpage : public QDialog
 
 signals:
     //传递注册昵称和密码
-    void isUnique(QString username,QString pwd);
+    void sendInfo(QString username,QString pwd);
 public:
     //构造函数
     explicit registerpage(QWidget *parent = nullptr);

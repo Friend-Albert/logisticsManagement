@@ -40,6 +40,8 @@ public:
     explicit adminpage(QWidget *parent = nullptr);
     ~adminpage();
 
+    registerpage *getNewPostman() const;
+
 private:
     Ui::adminpage *ui;
     int nextId;
@@ -61,6 +63,7 @@ private:
     void needAssign(int row);
     void queryPkg(QString);
     void queryPage();
+    void handle();
 };
 
 #endif // ADMINPAGE_H

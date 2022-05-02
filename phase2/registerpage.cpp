@@ -70,7 +70,7 @@ void registerpage::OKclicked(){
     }
     //正常则发出信号，检测用昵称是否唯一
     else if(_pwd == confirmPwd)
-        emit isUnique(_username,_pwd);
+        emit sendInfo(_username,_pwd);
     //两次密码输入不一致，给出提示并清空确认密码输入框中的文本
     else{
         QMessageBox::critical(this,"Error",

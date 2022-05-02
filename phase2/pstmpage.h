@@ -1,7 +1,6 @@
 #ifndef PSTMPAGE_H
 #define PSTMPAGE_H
 
-#define POSTMENPATH "D:/project/logisticsManagement/phase2/res/postmen.txt"
 #define DELIVERYPATH "D:/project/logisticsManagement/phase2/res/delivery.txt"
 #define TEMPPATH "D:/project/logisticsManagement/phase2/res/Tmp.txt"
 #define USERPATH "D:/project/logisticsManagement/phase2/res/user.txt"

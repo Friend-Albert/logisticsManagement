@@ -78,6 +78,7 @@ public slots:
     void checkUnique(QString ,QString );
     //处理用户更改密码
     void changepwd(QString,QString);
+    void addPwd(QString,QString);
 };
 
 #endif // LOGINPAGE_H

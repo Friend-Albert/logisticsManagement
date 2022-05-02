@@ -177,6 +177,7 @@ void loginpage::trylogin(){
             _admin = new adminpage(this);
             this->hide();
             _admin->show();
+            connect(_admin->getNewPostman(),&registerpage::sendInfo,this,&loginpage::addPwd);
         }
         else if(isPostman){
             _postman = new pstmpage(ui->usernameinput->text(),this);
@@ -198,7 +199,7 @@ void loginpage::showRegister(){
     this->hide();
     _register->show();
     //注册页面尝试注册，调用checkUnique检测新用户昵称是否唯一
-    connect(_register,&registerpage::isUnique,this,&loginpage::checkUnique);
+    connect(_register,&registerpage::sendInfo,this,&loginpage::checkUnique);
     connect(this,&loginpage::registerRlt,_register,&registerpage::handle);
 }
 
@@ -221,4 +222,9 @@ void loginpage::checkUnique(QString username,QString pwd){
 void loginpage::changepwd(QString username, QString newpwd)
 {
     passwd[username] = QPair<int,QString>(USER,newpwd);
+}
+
+void loginpage::addPwd(QString username, QString pwd)
+{
+    passwd[username] = QPair<int,QString>(POSTMAN,pwd);
 }

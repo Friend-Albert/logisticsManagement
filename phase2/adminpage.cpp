@@ -7,6 +7,7 @@ adminpage::adminpage(QWidget *parent) :
 {
     ui->setupUi(this);
     this->setAttribute(Qt::WA_DeleteOnClose);
+    newPostman = new registerpage(this);
     init();
     ui->assignbtn->setEnabled(false);
 
@@ -15,18 +16,7 @@ adminpage::adminpage(QWidget *parent) :
     connect(ui->querybtn,&QPushButton::clicked,this,&adminpage::queryPage);
     connect(this,&adminpage::sendQuery,this,&adminpage::queryPkg);
     connect(ui->infobtn,&QPushButton::clicked,this,&adminpage::queryDetail);
-    connect(ui->postmanbtn,&QPushButton::clicked,this,[=](){
-        newPostman = new registerpage(this);
-        newPostman->show();
-        this->hide();
-        connect(newPostman,&registerpage::isUnique,this,[=](QString username){
-           if(postmanName.find(username) == postmanName.end())
-               emit postmanRegister(true,2);
-           else
-               emit postmanRegister(false,2);
-        });
-        connect(this,&adminpage::postmanRegister,newPostman,&registerpage::handle);
-    });
+    connect(ui->postmanbtn,&QPushButton::clicked,this,&adminpage::handle);
     connect(ui->quitbtn,&QPushButton::clicked,this,[=](){
         this->close();
         this->parentWidget()->show();
@@ -36,10 +26,14 @@ adminpage::adminpage(QWidget *parent) :
 adminpage::~adminpage()
 {
     save();
-    if(newPostman != nullptr) delete newPostman;
     for(int i=0;i<allDelivery.size();i++)
         delete allDelivery[i];
     delete ui;
+}
+
+registerpage *adminpage::getNewPostman() const
+{
+    return newPostman;
 }
 
 void adminpage::init()
@@ -402,6 +396,19 @@ void adminpage::queryPage()
         query->close();
         emit sendQuery(input->text());
     });
+}
+
+void adminpage::handle()
+{
+    newPostman->show();
+    this->hide();
+    connect(newPostman,&registerpage::sendInfo,this,[=](QString username){
+       if(postmanName.find(username) == postmanName.end())
+           emit postmanRegister(true,2);
+       else
+           emit postmanRegister(false,2);
+    });
+    connect(this,&adminpage::postmanRegister,newPostman,&registerpage::handle);
 }
 
 /**
